@@ -3,8 +3,8 @@
 Supplemental material for Kubernetes Training.
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/datawire/colors/master/kubernetes/colors-deployment.yaml
-kubectl apply -f https://raw.githubusercontent.com/datawire/colors/master/kubernetes/colors-service.yaml
+kubectl apply -f https://raw.githubusercontent.com/reveller/colors/master/kubernetes/colors-deployment.yaml
+kubectl apply -f https://raw.githubusercontent.com/reveller/colors/master/kubernetes/colors-service.yaml
 ```
 
 # License

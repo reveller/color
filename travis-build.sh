@@ -66,7 +66,7 @@ if onmaster; then
     git checkout ${TRAVIS_BRANCH}
 
     # ...and make sure we're interacting with our official Docker repo.
-    DOCKER_REGISTRY="datawire"
+    DOCKER_REGISTRY="reveller"
 
     set +x
     echo "+docker login..."
@@ -85,7 +85,7 @@ if onmaster; then
     $ECHO git tag -a "v${VERSION}" -m "v${VERSION}"
 
     # ...and push the tag.
-    $ECHO git push --tags https://d6e-automation:${GH_TOKEN}@github.com/datawire/colors.git master
+    $ECHO git push --tags https://d6e-automation:${GH_TOKEN}@github.com/reveller/colors.git master
 else
     # If not on master, don't tag...
     echo "not on master; not tagging"

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: colors
-        image: datawire/colors:1.2
+        image: reveller/colors:1.3
         imagePullPolicy: Always
         ports:
         - name: http-api
