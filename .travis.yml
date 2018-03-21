@@ -1,0 +1,20 @@
+sudo: false
+dist: trusty
+language: python
+addons:
+  apt:
+    packages:
+    - python3
+python:
+- '3.6'
+install:
+- pip install -r requirements.txt
+services:
+- docker
+env:
+  global:
+  - DOCKER_REGISTRY=reveller
+  - COMMIT=${TRAVIS_COMMIT::8}
+  - secure: DANQUauuSs8VuWO9UxN7I6PdAQlTc3TZubmJ/YzxU9Uk67ZlhLUP2qoJbxJ/2cIR+4y3uwqJ0o1O+BwIjeukzQz5CnRbefUjLUWkFL266EF05nlE2Pwwq2TF2kTmba4ZdmPWTbLm33YLqKRTOhRAWBJblw2bNZ8ndCEQQsvy3c+94z+wIzk/guzN0CzuVKf9KpqzyOaWi1vIiUbVfpeuDBccuLwC6O2PUJTBWCuJ+l27eQV4bZ+uX1CPg7b4JvJLVL/y14x8MeCtmnLXyuYfeMQRF9eQA/OG3JL+/l0QO7inhFZEu6Cqbuz0UJMEFmzrdZhvnlfXaj907/oqdCFr19J5BK8p9Sr/+dz6cxB0BQcAvoD47cX8D1MAj7xZdzrbtL+H/HkZ/FWRw3twgvpDjeFqUOWXeqcp/XLwr1fJ6i41PnaUz3v62WVpOfdTrdqIo3puHm0Sph2hxXVEGnfBLNaeoKT0wQbt0ykg8nFYxLxPfrKv5Upu6wxFoUpQCXdyBt8jDMKxHSFxH18nVqXYqL9oLdfHhVR0TmT/7Wx2T0q9POxNNXS0tCNCD/+CBy0/7iqkF3bnVb6i+J140+M83hXVmsxfabV13XgKt+qP6M9sJx7EPXDxSG+woe1F+cTe/4UHZgmK9n9FmBRkbkVO/qfpGO2NlK95msm13Er3qmM=
+script:
+- bash travis-build.sh
