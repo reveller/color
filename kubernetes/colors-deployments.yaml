@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: colors
-        image: reveller/colors:1.3
+        image: reveller/colors:1.4
         imagePullPolicy: Always
         ports:
         - name: http-api

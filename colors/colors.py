@@ -8,29 +8,28 @@ import random
 import signal
 import time
 
-__version__ = "1.3"
+__version__ = "1.4"
 PORT=5000
 HOSTNAME=os.getenv("HOSTNAME")
 
 from flask import Flask, jsonify, request, Response
 app = Flask(__name__)
 
-######## Quote storage
-#
-# Obviously, this would more typically involve a persistent backing store. That's not
-# really needed for a demo though.
 
-quotes = [
-  "Abstraction is ever present.",
-  "A late night does not make any sense.",
-  "A principal idea is omnipresent, much like candy.",
-  "Nihilism gambles with lives, happiness, and even destiny itself!",
-  "The light at the end of the tunnel is interdependent on the relatedness of motivation, subcultures, and management.",
-  "Utter nonsense is a storyteller without equal.",
-  "Non-locality is the driver of truth. By summoning, we vibrate.",
-  "A small mercy is nothing at all?",
-  "The last sentence you read is often sensible nonsense.",
-  "668: The Neighbor of the Beast."
+######## Colors storage
+#
+# Yeah, this is not the most efficient way to do this, but it's quick a quickie demo for the PoC
+# I could either use a real database backend, or set up a class to store each record.
+
+colors = [
+  {"name":"black",	 "fg_code": 30, "bg_code": 40},
+  {"name":"red",	 "fg_code": 31,	"bg_code": 41},
+  {"name":"green",	 "fg_code": 32,	"bg_code": 42},
+  {"name":"yellow",	 "fg_code": 33,	"bg_code": 43},
+  {"name":"blue",	 "fg_code": 34,	"bg_code": 44},
+  {"name":"magenta", "fg_code": 35,	"bg_code": 45},
+  {"name":"cyan",	 "fg_code": 36,	"bg_code": 46},
+  {"name":"white",	 "fg_code": 37,	"bg_code": 47}
 ]
 
 ######## Utilities
@@ -127,6 +126,12 @@ def standard_handler(f):
 
     return wrapper
 
+def in_dict(d, k):
+    for i in d:
+        for key, value in i.iteritems():
+             if key == 'name':
+                 return value
+
 ######## REST endpoints
 
 ####
@@ -139,77 +144,63 @@ def health():
     return RichStatus.OK(msg="colors health check OK")
 
 ####
-# GET / returns a random quote as the 'quote' element of a JSON dictionary. It
+# GET / returns a random color as the 'color' element of a JSON dictionary. It
 # always returns a status of 200.
 
 @app.route("/", methods=["GET"])
 @standard_handler
 def statement():
-    # XXX time.sleep(0.5)
-    return RichStatus.OK(quote=random.choice(quotes))
+    idx = random.choice(range(len(colors)))
+    color = colors[idx]
+    return RichStatus.OK(idx=idx, color=color["name"])
 
 ####
-# GET /quote/quoteid returns a specific quote. 'quoteid' is the integer index
-# of the quote in our array above.
+# GET /<color_str> returns a specific color. 'color_str' is the string name
+# of the color in our array above.
 #
-# - If all goes well, it returns a JSON dictionary with the requested quote as
-#   the 'quote' element, with status 200.
+# - If all goes well, it returns a JSON dictionary with the requested color as
+#   the 'color' element, with status 200.
 # - If something goes wrong, it returns a JSON dictionary with an explanation
 #   of what happened as the 'error' element, with status 400.
 #
-# PUT /quote/quotenum updates a specific quote. It requires a JSON dictionary
-# as the PUT body, with the the new quote contained in the 'quote' dictionary
-# element.
-#
-# - If all goes well, it returns the new quote as if you'd requested it using
-#   the GET verb for this endpoint.
-# - If something goes wrong, it returns a JSON dictionary with an explanation
-#   of what happened as the 'error' element, with status 400.
 
-@app.route("/quote/<idx>", methods=["GET", "PUT"])
+@app.route("/<string:name>", methods=["GET"])
 @standard_handler
-def specific_quote(idx):
-    try:
-        idx = int(idx)
-    except ValueError:
-        return RichStatus.fromError("quote IDs must be numbers", status_code=400)
+def specific_color(name):
+    idx = next((index for (index, d) in enumerate(colors) if d["name"] == name), None)
+    if idx is None:
+        return RichStatus.fromError("no color %s" % name, status_code=400)
 
-    if (idx < 0) or (idx >= len(quotes)):
-        return RichStatus.fromError("no quote ID %d" % idx, status_code=400)
+    return RichStatus.OK(color=colors[idx])
 
-    if request.method == "PUT":
-        j = request.json
-
-        if (not j) or ('quote' not in j):
-            return RichStatus.fromError("must supply 'quote' via JSON dictionary", status_code=400)
-
-        quotes[idx] = j['quote']
-
-    return RichStatus.OK(quote=quotes[idx])
 
 ####
-# POST /quote adds a new quote to our list. It requires a JSON dictionary
-# as the POST body, with the the new quote contained in the 'quote' dictionary
-# element.
+# GET /<color_str>/bg returns a the bg_code of the requested color_str.
 #
-# - If all goes well, it returns a JSON dictionary with the new quote's ID as
-#   'quoteid', and the new quote as 'quote', with a status of 200.
-# - If something goes wrong, it returns a JSON dictionary with an explanation
-#   of what happened as the 'error' element, with status 400.
 
-@app.route("/quote", methods=["POST"])
+@app.route("/<string:name>/bg", methods=["GET"])
 @standard_handler
-def new_quote():
-    j = request.json
+def color_bg(name):
+    idx = next((index for (index, d) in enumerate(colors) if d["name"] == name), None)
+    if idx is None:
+        return RichStatus.fromError("no color %s" % name, status_code=400)
 
-    if (not j) or ('quote' not in j):
-        return RichStatus.fromError("must supply 'quote' via JSON dictionary", status_code=400)
+    return RichStatus.OK(color=colors[idx]["name"], path=request.path.rsplit('/', 1)[-1], fg=colors[idx]["bg_code"])
 
-    quotes.append(j['quote'])
 
-    idx = len(quotes) - 1
+####
+# GET /<color_str>/fg returns a the fg_code of the requested color_str.
+#
 
-    return RichStatus.OK(quote=quotes[idx], quoteid=idx)
+@app.route("/<string:name>/fg", methods=["GET"])
+@standard_handler
+def color_fg(name):
+    idx = next((index for (index, d) in enumerate(colors) if d["name"] == name), None)
+    if idx is None:
+        return RichStatus.fromError("no color %s" % name, status_code=400)
+
+    return RichStatus.OK(color=colors[idx]["name"], path=request.path.rsplit('/', 1)[-1], fg=colors[idx]["fg_code"])
+
 
 @app.route("/crash", methods=["GET"])
 @standard_handler
